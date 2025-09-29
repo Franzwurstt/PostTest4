@@ -33,13 +33,13 @@ alur program dikendalikan melalui kelas Main. Saat dijalankan, pengguna akan dit
 
 package com.mycompany.posttest3;
 
-import Model.Komponen;
+import Komponen.Komponen;
+import Komponen.KomponenService;
 import Model.KomponenPC;
 import Model.KomponenIO;
-import Service.KomponenService;
 import java.util.Scanner;
 
-public class Posttest3 {
+public class posttest4 {
     public static void main(String[] args) {
         KomponenService service = new KomponenService();
         Scanner input = new Scanner(System.in);
@@ -133,7 +133,7 @@ public class Posttest3 {
                     break;
 
                 case 6:
-                    System.out.println("Terima kasih, program selesai.");
+                    System.out.println("Terima kasih.");
                     break;
 
                 default:
@@ -150,53 +150,64 @@ public class Posttest3 {
 
 Pengelolaan data komponen ditangani oleh kelas KomponenService. Di dalamnya ada ArrayList yang menyimpan daftar komponen. Service ini bertugas melaksanakan operasi CRUD terhadap data komponen. Metode tambahKomponen() digunakan untuk menambahkan objek baru ke dalam list, lihatKomponen() untuk menampilkan semua komponen yang sudah ada, updateKomponen() untuk memperbarui komponen tertentu, dan hapusKomponen() untuk menghapus. Ada juga method hitungTotalHarga() yang akan menjumlahkan harga semua komponen.
 
-package Service;
+package Komponen;
 
-import Model.Komponen;
-
+import Model.KomponenIO;
+import Model.KomponenPC;
 import java.util.ArrayList;
 
 public class KomponenService {
-   private ArrayList<Komponen> listKomponen = new ArrayList<>();
+    private ArrayList<Komponen> daftarKomponen = new ArrayList<>();
 
+    
     public void tambahKomponen(Komponen k) {
-        listKomponen.add(k);
-        System.out.println(" Komponen berhasil ditambahkan!");
+        daftarKomponen.add(k);
+        System.out.println("Komponen berhasil ditambahkan!");
     }
-
-    public void lihatKomponen() {
-        System.out.println("\n=== Daftar Komponen ===");
-        if (listKomponen.isEmpty()) {
-            System.out.println("List masih kosong.");
+   
+    public void tambahKomponen(String nama, double harga, String kategori, boolean isPC) {
+        if (isPC) {
+            KomponenPC pc = new KomponenPC(nama, harga, kategori);
+            daftarKomponen.add(pc);
         } else {
-            for (int i = 0; i < listKomponen.size(); i++) {
+            KomponenIO io = new KomponenIO(nama, harga, kategori);
+            daftarKomponen.add(io);
+        }
+        System.out.println("Komponen berhasil ditambahkan (dengan overloading)!");
+    }
+    
+    public void lihatKomponen() {
+        if (daftarKomponen.isEmpty()) {
+            System.out.println("Daftar komponen kosong.");
+        } else {
+            for (int i = 0; i < daftarKomponen.size(); i++) {
                 System.out.print((i + 1) + ". ");
-                listKomponen.get(i).tampilkanInfo(); // polymorphism → sesuai subclass
+                daftarKomponen.get(i).tampilkanInfo(); // Polymorphism
             }
         }
     }
 
-    public void updateKomponen(int index, Komponen k) {
-        if (index >= 0 && index < listKomponen.size()) {
-            listKomponen.set(index, k);
+    public void updateKomponen(int index, Komponen baru) {
+        if (index >= 0 && index < daftarKomponen.size()) {
+            daftarKomponen.set(index, baru);
             System.out.println("Komponen berhasil diupdate!");
         } else {
-            System.out.println("Nomor komponen tidak valid.");
+            System.out.println("Index tidak valid.");
         }
     }
 
     public void hapusKomponen(int index) {
-        if (index >= 0 && index < listKomponen.size()) {
-            listKomponen.remove(index);
+        if (index >= 0 && index < daftarKomponen.size()) {
+            daftarKomponen.remove(index);
             System.out.println("Komponen berhasil dihapus!");
         } else {
-            System.out.println("Nomor komponen tidak valid.");
+            System.out.println("Index tidak valid.");
         }
     }
 
     public void hitungTotalHarga() {
         double total = 0;
-        for (Komponen k : listKomponen) {
+        for (Komponen k : daftarKomponen) {
             total += k.getHarga();
         }
         System.out.println("Total harga semua komponen: Rp" + String.format("%,.2f", total));
@@ -204,13 +215,19 @@ public class KomponenService {
 }
 
 
+
 ### Peran Class Model (Komponen, KomponenPC, KomponenIO)
 
 Pertama, kelas Komponen bertindak sebagai superclass yang mendefinisikan atribut dasar dari setiap komponen komputer, yaitu nama, harga, dan kategori. Ketiga atribut ini dibuat dengan akses private agar tidak bisa diakses langsung dari luar kelas. Untuk bisa mengubah atau membaca nilai atribut, digunakan getter dan setter sehingga penerapan encapsulation terlihat jelas. Di dalam kelas ini juga terdapat method tampilkanInfo(), sebuah method umum yang nantinya dapat dioverride oleh subclass agar bisa menampilkan informasi dengan cara yang lebih spesifik.
 
+Kelas Komponen ini berperan sebagai abstraction dalam program.
+Di sini kita tidak mendefinisikan seluruh detail komponen PC, melainkan hanya mendefinisikan kerangka umum yang harus dimiliki semua komponen.
+
+Misalnya di dalamnya ada atribut nama, harga, dan kategori, lengkap dengan getter–setter. Lalu ada method abstrak:
+
 package Model;
 
-public class Komponen {
+public abstract class Komponen {
     private String nama;
     private double harga;
     private String kategori;
@@ -230,17 +247,18 @@ public class Komponen {
     public String getKategori() { return kategori; }
     public void setKategori(String kategori) { this.kategori = kategori; }
 
-    public void tampilkanInfo() {
-        System.out.println("Nama: " + nama +
-                           " | Harga: Rp" + harga +
-                           " | Kategori: " + kategori);
-    }
+    public abstract void tampilkanInfo();
 }
 
 
 Selanjutnya ada kelas KomponenPC yang menjadi subclass pertama dari Komponen. Kelas ini mewakili seluruh komponen internal PC seperti prosesor, RAM, motherboard, atau VGA. Selain atribut umum dari superclass, kelas ini menambahkan atribut baru berupa spesifikasi yang berfungsi menjelaskan detail teknis komponen tersebut. Di sini method tampilkanInfo() dioverride agar menampilkan informasi lengkap termasuk spesifikasi tambahan tersebut. Dengan begitu, informasi yang muncul lebih sesuai dengan kebutuhan pengguna ketika melihat daftar komponen PC.
 
-Package Model;
+Kelas ini meng-override method abstrak tampilkanInfo() dari Komponen. Meskipun semua objek dipanggil dengan method tampilkanInfo(), hasil output bisa berbeda tergantung subclass-nya.
+
+
+package Model;
+
+import Komponen.Komponen;
 
 public class KomponenPC extends Komponen {
     private String tipePC; 
@@ -257,21 +275,26 @@ public class KomponenPC extends Komponen {
     }
 }
 
+
 Berbeda dengan itu, kelas KomponenIO adalah subclass kedua dari Komponen yang fokus pada perangkat input dan output seperti keyboard, mouse, monitor, atau printer. Kelas ini menambahkan atribut konektivitas untuk menjelaskan bagaimana perangkat tersebut terhubung, misalnya menggunakan USB, HDMI, atau wireless. Sama seperti KomponenPC, kelas ini juga melakukan overriding pada method tampilkanInfo(). Dengan overriding ini, objek KomponenIO akan menampilkan detail khusus tentang konektivitas yang tidak dimiliki oleh komponen PC.
+
+Sama seperti KomponenPC, di sini juga ada overriding terhadap method tampilkanInfo(), tapi dengan cara yang spesifik untuk komponen input–output.
 
 
 package Model;
 
-public class KomponenIO extends Komponen {
-    private String tipeIO; // contoh: "Input", "Output"
+import Komponen.Komponen;
 
-     public KomponenIO(String nama, double harga, String kategori) {
+public class KomponenPC extends Komponen {
+    private String tipePC; 
+
+    public KomponenPC(String nama, double harga, String kategori) {
         super(nama, harga, kategori);
     }
 
     @Override
     public void tampilkanInfo() {
-        System.out.println("Komponen I/O -> " + getNama() +
+        System.out.println("Komponen PC -> " + getNama() +
                            " | Harga: Rp" + getHarga() +
                            " | Kategori: " + getKategori());
     }
